@@ -8,7 +8,7 @@
       playsinline
       class="offline-video"
     >
-      <source src="/videos/offline.mp4" type="video/mp4" />
+      <source src="videos/offline.mp4" type="video/mp4" />
     </video>
 
     <p>Você está offline 😢</p>
@@ -67,7 +67,6 @@ const { isOnline } = useOnlineStatus();
   font-size: 13px;
 }
 
-/* animação suave */
 @keyframes fadeIn {
   from {
     opacity: 0;
