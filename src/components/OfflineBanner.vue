@@ -8,10 +8,9 @@
       playsinline
       class="offline-video"
     >
-      <source src="videos/offline.mp4" type="video/mp4" />
     </video>
 
-    <p>Você está offline 😢</p>
+    <p>Você está offline</p>
     <small>Tentando reconectar...</small>
 
   </div>

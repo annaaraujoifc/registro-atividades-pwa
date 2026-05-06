@@ -10,11 +10,31 @@ export default defineConfig({
     vue(),
     VitePWA({
       registerType: 'autoUpdate',
-            workbox: {
+
+      workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         cleanupOutdatedCaches: true,
         sourcemap: false,
+
+        runtimeCaching: [
+          {
+            urlPattern: /^http:\/\/localhost:8001\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24, // 24 horas
+              },
+              networkTimeoutSeconds: 10,
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+        ],
       },
+
       manifest: {
         id: 'com.tarefas-pwa',
         name: 'Gerenciador de Tarefas',
@@ -44,12 +64,15 @@ export default defineConfig({
           },
         ],
       },
+
       devOptions: {
         enabled: true,
       },
     }),
+
     vueDevTools(),
   ],
+
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
