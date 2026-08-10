@@ -23,18 +23,27 @@ export const useTasksStore = defineStore('tasks', () => {
       loading.value = false
     }
   }
+async function addTask({ title, imgAttachmentKey } = {}) {
+  if (!title?.trim()) return
 
-  async function addTask(payload) {
-    if (!payload.title?.trim()) return;
-    error.value = null;
-    try {
-      const response = await tasksApi.create(payload)
-      tasks.value.push(response.data)
-    } catch (err) {
-      error.value = 'Erro ao adicionar tarefa.'
-      console.error(err)
-    }
+  error.value = null
+
+  const payload = {
+    title: title.trim(),
   }
+
+  if (imgAttachmentKey != null) {
+    payload.img_attachment_key = imgAttachmentKey
+  }
+
+  try {
+    const response = await tasksApi.create(payload)
+    tasks.value.push(response.data)
+  } catch (err) {
+    error.value = 'Erro ao adicionar tarefa.'
+    console.error(err)
+  }
+}
 
   async function toggleTask(id) {
     const task = tasks.value.find((t) => t.id === id)
