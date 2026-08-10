@@ -10,33 +10,11 @@ export default defineConfig({
     vue(),
     VitePWA({
       registerType: 'autoUpdate',
-
-      workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        cleanupOutdatedCaches: true,
-        sourcemap: false,
-
-        runtimeCaching: [
-          {
-            urlPattern: /^http:\/\/localhost:8001\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache',
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24, // 24 horas
-              },
-              networkTimeoutSeconds: 10,
-              cacheableResponse: {
-                statuses: [0, 200],
-              },
-            },
-          },
-        ],
-      },
+      strategies: 'injectManifest', // 
+      srcDir: 'src',                // 
+      filename: 'sw.js',            // 
 
       manifest: {
-        id: 'com.tarefas-pwa',
         name: 'Gerenciador de Tarefas',
         short_name: 'Tarefas',
         description: 'Aplicativo PWA para gerenciar tarefas diárias',
@@ -45,6 +23,7 @@ export default defineConfig({
         display: 'standalone',
         scope: '/',
         start_url: '/',
+        id: 'com.task-manager.app',
         icons: [
           {
             src: '/icons/icon-192x192.png',
@@ -64,15 +43,13 @@ export default defineConfig({
           },
         ],
       },
-
       devOptions: {
         enabled: true,
+        type: 'module', // 
       },
     }),
-
     vueDevTools(),
   ],
-
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
