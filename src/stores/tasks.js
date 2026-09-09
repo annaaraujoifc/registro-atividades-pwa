@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import tasksApi from '../api/tasksApi.js'
+import { buildLocationPayload } from '../utils/location.js'
 
 export const useTasksStore = defineStore('tasks', () => {
   const tasks = ref([])
@@ -23,27 +24,32 @@ export const useTasksStore = defineStore('tasks', () => {
       loading.value = false
     }
   }
-async function addTask({ title, imgAttachmentKey } = {}) {
-  if (!title?.trim()) return
 
-  error.value = null
+  async function addTask({ title, imgAttachmentKey, latitude, longitude, geolocation_accuracy, geolocation_timestamp, location_label } = {}) {
+    if (!title?.trim()) return
 
-  const payload = {
-    title: title.trim(),
+    error.value = null
+    const payload = {
+      title: title.trim(),
+      ...buildLocationPayload({
+        latitude,
+        longitude,
+        accuracy: geolocation_accuracy,
+        timestamp: geolocation_timestamp,
+        label: location_label,
+      }),
+    }
+
+    if (imgAttachmentKey != null) payload.img_attachment_key = imgAttachmentKey
+
+    try {
+      const response = await tasksApi.create(payload)
+      tasks.value.push(response.data)
+    } catch (err) {
+      error.value = 'Erro ao adicionar tarefa.'
+      console.error(err)
+    }
   }
-
-  if (imgAttachmentKey != null) {
-    payload.img_attachment_key = imgAttachmentKey
-  }
-
-  try {
-    const response = await tasksApi.create(payload)
-    tasks.value.push(response.data)
-  } catch (err) {
-    error.value = 'Erro ao adicionar tarefa.'
-    console.error(err)
-  }
-}
 
   async function toggleTask(id) {
     const task = tasks.value.find((t) => t.id === id)
@@ -70,12 +76,37 @@ async function addTask({ title, imgAttachmentKey } = {}) {
     }
   }
 
-  async function updateTask(id, { title, imgAttachmentKey } = {}) {
+  async function updateTask(id, { title, imgAttachmentKey, latitude, longitude, geolocation_accuracy, geolocation_timestamp, location_label } = {}) {
     if (title !== undefined && !title.trim()) return
     error.value = null
     const payload = {}
     if (title !== undefined) payload.title = title.trim()
     if (imgAttachmentKey != null) payload.img_attachment_key = imgAttachmentKey
+
+    const hasLocationFields =
+      latitude !== undefined ||
+      longitude !== undefined ||
+      geolocation_accuracy !== undefined ||
+      geolocation_timestamp !== undefined ||
+      location_label !== undefined
+
+    if (hasLocationFields) {
+      Object.assign(
+        payload,
+        buildLocationPayload(
+          latitude != null && longitude != null
+            ? {
+                latitude,
+                longitude,
+                accuracy: geolocation_accuracy,
+                timestamp: geolocation_timestamp,
+                label: location_label,
+              }
+            : null,
+        ),
+      )
+    }
+
     try {
       const response = await tasksApi.update(id, payload)
       const index = tasks.value.findIndex((t) => t.id === id)
